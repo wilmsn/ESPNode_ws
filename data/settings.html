@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<script src="jquery.js"></script>
+<link rel='stylesheet' type='text/css' href='style.css' />
+<script type="text/javascript">
+var title="Einstellungen";
+var rf24node_m2 = false;
+var rf24node_m3 = false;
+
+
+$(document).ready(function(){
+  $("#titel2").hide();
+  $("#rf24gw_div").hide();
+  $("#rf24node_div").hide();
+//  $("#rf24node_m1").hide();
+  $("#rf24node_m2").hide();
+  $("#rf24node_m3").hide();
+  $("#rf24log_div").hide();
+  $('#rf24gw').click(function(){ 
+    if($('#rf24gw').is(":checked")){
+      $("#rf24gw_div").show();
+      $("#rf24log_div").show();
+    } else {
+      $("#rf24gw_div").hide();
+      $("#rf24log_div").hide();
+    }
+  });
+  $('#rf24node').click(function(){ 
+    if($('#rf24node').is(":checked")){
+      $("#rf24node_div").show();
+    } else {
+      $("#rf24node_div").hide();
+    }
+  });
+  $.getJSON( "webcfg", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });    
+  });
+  $.getJSON( "logcfg", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });    
+  });
+  $.getJSON( "setcfg", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });
+  });
+});
+
+function prozessJS( key, val ) {
+  switch(key) {
+    case "titel1":
+      $("#titel1").html(val);
+      $("#titel").html(val+" - "+title);
+    break;
+    case "titel2":
+      $("#titel2").html(val);
+      $("#titel2").show();
+    break;
+    case "mqtt":
+      if ( val == 1 ) { 
+        $("#mqtt_fs").show();
+        $("#mqtt_div").show();
+      } else {
+        $("#mqtt_fs").hide();
+        $("#mqtt_div").hide();
+      }          
+    break;
+    case "rf24node":
+      if ( val == 1 ) {
+        $('#rf24node').prop('checked', true);
+        $("#rf24node_div").show(); 
+      } else { 
+        $('#rf24node_fs').hide(); 
+      }
+    break;
+    case "rf24node_nid":
+      $('#rf24node_nid').val(val);
+    break;
+    case "rf24node_m1n":
+      $("#rf24node_m1").show(); 
+      $('#rf24node_m1n').val(val);
+    break;
+    case "rf24node_m1v":
+      $('#rf24node_m1v').val(val);
+    break;
+    case "rf24node_m2":
+      if ( val == 1 ) { 
+        rf24node_m2=true;
+        $("#rf24node_m2").show();
+      } else {
+        rf24node_m2=false;
+        $("#rf24node_m2").hide();
+      }          
+    break;
+    case "rf24node_m2n":
+      $('#rf24node_m2n').val(val);
+    break;
+    case "rf24node_m2v":
+      $('#rf24node_m2v').val(val);
+    break;
+    case "rf24node_m3":
+      if ( val == 1 ) { 
+        rf24node_m3=true;
+        $("#rf24node_m3").show();
+      } else {
+        rf24node_m3=false;
+        $("#rf24node_m3").hide();
+      }          
+    break;
+    case "rf24node_m3n":
+      $('#rf24node_m3n').val(val);
+    break;
+    case "rf24node_m3v":
+      $('#rf24node_m3v').val(val);
+    break;
+    case "rf24gw":
+      if ( val == 1 ) { 
+	    $('#rf24gw').prop('checked', true);
+        $("#rf24gw_div").show(); 
+        $("#rf24log_div").show(); 
+      } else { 
+        $('#rf24gw_fs').hide(); 
+      }
+    break;
+    case "RF24HUB-Server":
+      $('#rf24hubname').val(val);
+    break;
+    case "RF24HUB-Port":
+      $('#rf24hubport').val(val);
+    break;
+    case "RF24GW-Port":
+      $('#rf24gwport').val(val);
+    break;
+    case "RF24GW-No":
+      $('#rf24gwno').val(val);
+    break;
+    case "mqttserver":
+      $('#mqttserver').val(val);
+    break;
+    case "mqttclient":
+      $('#mqttclient').val(val);
+    break;
+    case "log_sensor":
+      if ( val == 1 ) {
+        $('#log_sensor').prop('checked', true);
+      } else {
+        $('#log_sensor').prop('checked', false);
+      }
+    break;
+    case "log_rf24":
+      if ( val == 1 ) {
+        $('#log_rf24').prop('checked', true);
+      } else {
+        $('#log_rf24').prop('checked', false);
+      }
+    break;
+    case "log_mqtt":
+      if ( val == 1 ) {
+        $('#log_mqtt').prop('checked', true);
+      } else {
+        $('#log_mqtt').prop('checked', false);
+      }
+    break;
+    case "log_webcmd":
+      if ( val == 1 ) {
+        $('#log_webcmd').prop('checked', true);
+      } else {
+        $('#log_webcmd').prop('checked', false);
+      }
+    break;
+    case "log_sysinfo":
+      if ( val == 1 ) {
+        $('#log_sysinfo').prop('checked', true);
+      } else {
+        $('#log_sysinfo').prop('checked', false);
+      }
+    break;
+    case "log_fs_sysinfo":
+      if ( val == 1 ) {
+        $('#log_fs_sysinfo').prop('checked', true);
+      } else {
+        $('#log_fs_sysinfo').prop('checked', false);
+      }
+    break;
+    case "logfile":
+      if ( val == 1 ) {
+        $('#logfile').prop('checked', true);
+      } else {
+        $('#logfile').prop('checked', false);
+      }
+    break;
+    case "console":
+      if ( val == 1 ) {
+        $('#console').prop('checked', true);
+      } else {
+        $('#console').prop('checked', false);
+      }
+    break;
+  }
+}
+  
+function store() {
+  //alert($("input[name='saveeprom']:checked").val());  
+  var mycmd = "/cmd?";
+  mycmd = mycmd + "mqttserver=" + $('#mqttserver').val() + "&mqttclient=" + $('#mqttclient').val();
+  if($('#rf24gw').is(":checked")){
+    mycmd = mycmd + "&rf24gw_enable=1&rf24hubname=" + $('#rf24hubname').val() + "&rf24hubport=" + $('#rf24hubport').val() + 
+                    "&rf24gwport=" + $('#rf24gwport').val() + "&rf24gwno=" + $('#rf24gwno').val();
+  } else {
+    mycmd = mycmd + "&rf24gw=0";
+  }
+  if($('#rf24node').is(":checked")){
+    mycmd = mycmd + "&rf24node_enable=1&rf24node_nodeid=" + $('#rf24node_nid').val() + "&rf24node_val1_channel=" + $('#rf24node_m1v').val(); 
+    if( rf24node_m2 ) {
+      mycmd = mycmd + "&rf24node_val2_channel=" + $('#rf24node_m2v').val(); 
+    }
+    if( rf24node_m3 ) {
+      mycmd = mycmd + "&rf24node_val3_channel=" + $('#rf24node_m3v').val(); 
+    }
+  } else {
+    mycmd = mycmd + "&rf24node=0";
+  }
+  if ( $("#logfile").is(":checked") ) {
+    mycmd = mycmd + "&logfile=1";
+  } else {
+    mycmd = mycmd + "&logfile=0";
+  }
+  if ( $("#console").is(":checked") ) {
+    mycmd = mycmd + "&console=1";
+  } else {
+    mycmd = mycmd + "&console=0";
+  }
+  if ( $("#log_rf24").is(":checked") ) {
+    mycmd = mycmd + "&log_rf24=1";
+  } else {
+    mycmd = mycmd + "&log_rf24=0";
+  }
+  if ( $("#log_sensor").is(":checked") ) {
+    mycmd = mycmd + "&log_sensor=1";
+  } else {
+    mycmd = mycmd + "&log_sensor=0";
+  }
+  if ( $("#log_mqtt").is(":checked") ) {
+    mycmd = mycmd + "&log_mqtt=1";
+  } else {
+    mycmd = mycmd + "&log_mqtt=0";
+  }
+  if ( $("#log_webcmd").is(":checked") ) {
+    mycmd = mycmd + "&log_webcmd=1";
+  } else {
+    mycmd = mycmd + "&log_webcmd=0";
+  }
+  if ( $("#log_sysinfo").is(":checked") ) {
+    mycmd = mycmd + "&log_sysinfo=1";
+  } else {
+    mycmd = mycmd + "&log_sysinfo=0";
+  }
+  if ( $("#log_fs_sysinfo").is(":checked") ) {
+    mycmd = mycmd + "&log_fs_sysinfo=1";
+  } else {
+    mycmd = mycmd + "&log_fs_sysinfo=0";
+  }
+  if ($("input[name='saveeprom']:checked").val() == 1) {
+    mycmd = mycmd + "&saveeprom";
+  }  
+  alert(mycmd);
+  $.get(mycmd, function(data) {
+//    alert(data);
+    location.reload(true);
+  });
+}
+
+function do_restart() {
+  var r = confirm("Wirklich neustarten?");
+  if (r == true) {
+    $.get("/restart", function(data) {
+       alert(data);
+    });
+  }
+}
+
+function dellog() {
+  $.get("/cmd?dellogfile", function(data) {
+    alert(data);
+  });
+}
+
+</script>
+
+<title id="titel"></title>
+</head>
+<body>
+<div class="wrapper" class="header">
+  <div class="div_header">
+    <h2 id="titel1" class="titel1">Titel1</h2>
+    <h3 id="titel2" class="titel2">Titel2</h3>
+    <hr>
+  </div>
+  <div class="div_content">
+<fieldset id="rf24gw_fs"> 
+	<legend>RF24 Gateway:</legend> 
+	<input type="checkbox" name="rf24gw" value="rf24gw" id="rf24gw" class="checkbox">
+	<label for="rf24gw">RF24 Gateway</label>
+	<div id="rf24gw_div">
+	<hr>
+	<input type="text" value="RF24 Hub Server:"  class="input_50a" disabled>
+	<input type="text" name="rf24hubname" value="" id="rf24hubname" class="input_50b">
+	<br>
+	<input type="text" value="RF24 Hub Port:"  class="input_50a" disabled>
+	<input type="text" name="rf24hubport" value="" id="rf24hubport" class="input_50b">
+	<br>
+	<input type="text" value="RF24 GW Port:"  class="input_50a" disabled>
+	<input type="text" name="rf24gwport" value="" id="rf24gwport" class="input_50b">
+	<br>
+	<input type="text" value="RF24 Gateway No:"  class="input_50a" disabled>
+	<input type="text" name="rf24gwno" value="" id="rf24gwno" class="input_50b">
+	<br>
+        </div>
+</fieldset>
+
+<fieldset id="rf24node_fs"> 
+	<legend>RF24 Node:</legend> 
+	<input type="checkbox" name="rf24node" value="rf24node" id="rf24node" class="checkbox">
+	<label for="rf24nodeenable">RF24 Node</label><br>
+	<div id="rf24node_div">
+	<hr>
+	<div id="rf24node_m1">
+	<input type="text" value="Node ID:" class="input_70a" disabled>
+	<input type="number" name="rf24node_nid" value="" id="rf24node_nid" class="input_70b">
+	<hr>
+	<input type="text" value="Sensor" class="input_header" disabled>
+	<input type="text" value="Channel" class="input_header" style="text-align: right;" disabled>
+	<br>
+	<input type="text" name="rf24node_m1n" value="" id="rf24node_m1n" class="input_70a" disabled>
+	<input type="number" name="rf24node_m1v" value="" id="rf24node_m1v" class="input_70b">
+	<br>
+	<div id="rf24node_m2">
+	<input type="text" name="rf24node_m2n" value="" id="rf24node_m2n" class="input_70a" disabled>
+	<input type="number" name="rf24node_m2v" value="" id="rf24node_m2v" class="input_70b">
+	<br>
+	</div>
+	<div id="rf24node_m3">
+	<input type="text" name="rf24node_m3n" value="" id="rf24node_m3n" class="input_70a" disabled>
+	<input type="number" name="rf24node_m3v" value="" id="rf24node_m3v" class="input_70b"><br>
+	</div>
+        </div>
+</fieldset>
+
+<fieldset id="mqtt_fs"> 
+	<legend>MQTT:</legend> 
+	<input type="text" value="MQTT Server:"  class="input_50a" disabled>
+	<input type="text" name="mqttserver" value="" id="mqttserver" class="input_50b">
+	<br>
+	<input type="text" value="MQTT Client:"  class="input_50a" disabled>
+	<input type="text" name="mqttclient" value="" id="mqttclient" class="input_50b">
+	<br>
+</fieldset>
+  
+<fieldset> 
+	<legend>Log to /debugfile.txt</legend> 
+	<input type="checkbox" name="logcontent" value="sysinfo" id="log_fs_sysinfo" class="checkbox">
+	<label for="log_sysinfo">System Informationen</label><br>
+</fieldset>
+
+<fieldset> 
+	<legend>Log to Console</legend> 
+	<div id="rf24log_div">
+	<input type="checkbox" name="logcontent" value="rf24" id="log_rf24" class="checkbox">
+	<label for="log_rf24" id="log_rf24l">RF24</label><br>
+	</div>
+	<input type="checkbox" name="logcontent" value="sensor" id="log_sensor" class="checkbox">
+	<label for="log_sensor">Sensor</label><br>
+	<div id="mqtt_div">
+	<input type="checkbox" name="logcontent" value="mqtt" id="log_mqtt" class="checkbox">
+	<label for="log_mqtt">MQTT</label><br>
+        </div>
+	<input type="checkbox" name="logcontent" value="webcmd" id="log_webcmd" class="checkbox">
+	<label for="log_webcmd">Web Kommando</label><br>
+	<input type="checkbox" name="logcontent" value="sysinfo" id="log_sysinfo" class="checkbox">
+	<label for="log_sysinfo">System Informationen</label><br>
+</fieldset>
+
+<fieldset id="xyz"> 
+	<legend>Daten dauerhaft speichern?</legend> 
+	<input type="radio" name="saveeprom" value="1" id="eprom_yes" class="checkbox">
+	<label for="eprom_yes">Dauerhaft speichern</label><br>
+	<input type="radio" name="saveeprom" value="0" id="eprom_no" class="checkbox" checked>
+	<label for="eprom_no">Nur temporär verwenden</label><br>
+</fieldset>
+
+  </div>
+    <button class="button bg_gr" onclick="store();">Speichern</button>
+    <button class="button bg_gr" onclick="dellog();">Logfile löschen</button>
+     <form method='POST' action='/update' enctype='multipart/form-data'>
+         Firmware:<br>
+         <input style="color:white;" type='file' accept='.bin,.bin.gz' name='firmware'>
+         <input class="button bg_rt" type='submit' value='Update Firmware'>
+     </form>
+     <form method='POST' action='/update' enctype='multipart/form-data'>
+         FileSystem:<br>
+         <input style="color:white;" type='file' accept='.bin,.bin.gz' name='filesystem'>
+         <input class="button bg_rt" type='submit' value='Update FileSystem'>
+     </form>
+    
+    <button class="button bg_rt" onclick="do_restart();">Neustart</button>
+    <button class="button bg_bk" onclick="window.location.href='index.html'">Hauptseite</button>
+  <div class="div_footer">
+    <hr>
+    ESPNode von Norbert Wilms
+  </div>
+</div>
+</body>
+</html>

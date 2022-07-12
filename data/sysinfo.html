@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<link rel='stylesheet' type='text/css' href='style.css' />
+<script src="jquery.js"></script>
+<script type="text/javascript">
+var htmlversion = "2.neubau";
+var title="Systeminformationen";
+$(document).ready(function(){
+  $("#titel2").hide();
+  $.getJSON( "webcfg", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });    
+  });
+  $.getJSON( "setcfg", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });    
+  });
+  $.getJSON( "sysinfo1", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });
+  });
+  $.getJSON( "sysinfo2", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });
+  });
+  $("#f_htmlversion").html(htmlversion);
+});
+
+function prozessJS( key, val ) {
+  switch(key) {
+    case "titel1":
+      $("#titel1").html(val);
+      $("#titel").html(val+" - "+title);
+    break;
+    case "titel2":
+      $("#titel2").html(val);
+      $("#titel2").show();
+    break;
+    case "IP":
+      $("#f_localip").html(val);
+    break;
+    case "GW-IP":
+      $("#f_gatewayip").html(val);
+    break;
+    case "DnsIP":
+      $("#f_dnsip").html(val);
+    break;
+    case "SSID":
+      $("#f_ssid").html(val);
+    break;
+    case "Channel":
+      $("#f_channel").html(val);
+    break;
+    case "SubNetMask":
+      $("#f_subnetmask").html(val);
+    break;
+    case "BSSID":
+      $("#f_bssid").html(val);
+    break;
+    case "MAC":
+      $("#f_macaddress").html(val);
+    break;
+    case "Platform":
+      $("#f_platform").html(val);
+    break;
+    case "Hostname":
+      $("#f_hostname").html(val);
+    break;
+    case "ResetReason":
+      $("#f_resetreason").html(val);
+    break;
+    case "CpuFreq":
+      $("#f_cpufreq").html(val);
+    break;
+    case "Cores":
+      $("#f_cores").html(val);
+    break;
+    case "Freespace":
+      $("#f_freespace").html(val);
+    break;
+    case "Sketchsize":
+      $("#f_sketchsize").html(val);
+    break;
+    case "Heap_max":
+      $("#f_maxheep").html(val);
+    break;
+    case "Heap_free":
+      $("#f_freeheep").html(val);
+    break;
+    case "Heap_frag":
+      $("#f_heapfrag").html(val+"%");
+    break;
+    case "FlashSize":
+      $("#f_flashsize").html(val);
+    break;
+    case "FlashFreq":
+      $("#f_flashspeed").html(val);
+    break;
+    case "CoreVer":
+      $("#f_coreversion").html(val);
+    break;
+    case "IdeVer":
+      $("#f_ideversion").html(val);
+    break;
+    case "MQTT-Hostname":
+      $("#f_mqtthostname").html(val);
+    break;
+    case "MQTT-Server":
+      $("#f_mqttserver").html(val);
+    break;
+    case "RF24HUB-Server":
+      $("#f_rf24hubserver").html(val);
+    break;
+    case "RF24HUB-Port":
+      $("#f_rf24hubport").html(val);
+    break;
+    case "RF24GW-Port":
+      $("#f_rf24gwport").html(val);
+    break;
+    case "SdkVer":
+      $("#f_sdkversion").html(val);
+    break;
+    case "SW":
+      $("#f_swversion").html(val);
+    break;
+    case "Vcc":
+      $("#f_vcc").html(val);
+    break;
+    case "UpTime":
+      $("#f_uptime").html(val);
+    break;
+    case "mqttserver":
+      $("#f_mqttserver").html(val);
+    break;
+    case "mqttclient":
+      $("#f_mqttclient").html(val);
+    break;
+    case "mqtt":
+      if (val == 1) {
+        $("#Tab").append("<tr><td colspan=2 class='tab_head'>MQTT:</td></tr>"
+			+"<tr><td class='tab_left'> MQTT Server: </td><td class='tab_right' id='f_mqttserver'></td></tr>"
+			+"<tr><td class='tab_left'> MQTT Client: </td><td class='tab_right' id='f_mqttclient'></td></tr>"
+                        );
+      }
+    break;
+    case "rf24gw":
+      if (val == 1) {
+        $("#Tab").append("<tr><td colspan=2 class='tab_head'>RF24 Gateway:</td></tr>"
+                        +"<tr><td class='tab_left'> RF24 Hub Server: </td><td class='tab_right' id='f_rf24hubserver'></td></tr>"
+                        +"<tr><td class='tab_left'> RF24 Hub UDP Port: </td><td class='tab_right' id='f_rf24hubport'></td></tr>"
+                        +"<tr><td class='tab_left'> RF24 GW UDP Port: </td><td class='tab_right' id='f_rf24gwport'></td></tr>"
+                        +"<tr><td class='tab_left'> RF24 GW Nummer: </td><td class='tab_right' id='f_rf24gwno'></td></tr>"
+                        );
+      }
+    break;
+    case "RF24HUB-Server":
+      $("#f_rf24hubserver").html(val);
+    break;
+    case "RF24HUB-Port":
+      $("#f_rf24hubport").html(val);
+    break;
+    case "RF24GW-Port":
+      $("#f_rf24gwport").html(val);
+    break;
+    case "RF24GW-No":
+      $("#f_rf24gwno").html(val);
+    break;
+    case "rf24node":
+      if (val == 1) {
+        $("#Tab").append("<tr><td colspan=2 class='tab_head'>RF24 Node:</td></tr>"
+                        +"<tr><td class='tab_left'> RF24 Node ID: </td><td class='tab_right' id='f_rf24nodeid'></td></tr>"
+                        +"<tr><td class='tab_left'> RF24 Sensor1: </td><td class='tab_right' id='f_rf24sens1'></td></tr>"
+                        +"<tr><td class='tab_left'> RF24 Channel1: </td><td class='tab_right' id='f_rf24chan1'></td></tr>"
+                        );
+      }
+    break;
+    case "rf24node_nid":
+      $("#f_rf24nodeid").html(val);
+    break;
+    case "rf24node_m1n":
+      $("#f_rf24sens1").html(val);
+    break;
+    case "rf24node_m1v":
+      $("#f_rf24chan1").html(val);
+    break;
+    case "rf24node_m2":
+      if (val == 1) {
+        $("#Tab").append("<tr><td class='tab_left'> RF24 Sensor2: </td><td class='tab_right' id='f_rf24sens2'></td></tr>"
+                        +"<tr><td class='tab_left'> RF24 Channel2: </td><td class='tab_right' id='f_rf24chan2'></td></tr>"
+                        );
+      }
+    break;
+    case "rf24node_m2n":
+      $("#f_rf24sens2").html(val);
+    break;
+    case "rf24node_m2v":
+      $("#f_rf24chan2").html(val);
+    break;
+    case "rf24node_m3":
+      if (val == 1) {
+        $("#Tab").append("<tr><td class='tab_left'> RF24 Sensor3: </td><td class='tab_right' id='f_rf24sens3'></td></tr>"
+                        +"<tr><td class='tab_left'> RF24 Channel3: </td><td class='tab_right' id='f_rf24chan3'></td></tr>"
+                        );
+      }
+    break;
+    case "rf24node_m3n":
+      $("#f_rf24sens3").html(val);
+    break;
+    case "rf24node_m3v":
+      $("#f_rf24chan3").html(val);
+    break;
+  }
+}
+
+</script>
+
+<title id="titel"></title>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="div_header">
+      <h2 id="titel1" class="titel1">Titel1</h2>
+      <h3 id="titel2" class="titel2">Titel2</h3>
+      <hr>
+    </div>
+    <div class="div_content">
+      <table style="width:100%" id="Tab"><tbody>
+        <tr><td colspan=2 class="tab_head">Host:</td></tr>
+        <tr><td class="tab_left"> Platform: </td><td class="tab_right" id="f_platform"></td></tr>
+        <tr><td class="tab_left"> Cores: </td><td class="tab_right" id="f_cores"></td></tr>
+        <tr><td class="tab_left"> Hostname: </td><td class="tab_right" id="f_hostname"></td></tr>
+        <tr><td class="tab_left"> CPU Speed: </td><td class="tab_right" id="f_cpufreq"></td></tr>
+        <tr><td class="tab_left"> Flash Size: </td><td class="tab_right" id="f_flashsize"></td></tr>
+        <tr><td class="tab_left"> Flash Speed: </td><td class="tab_right" id="f_flashspeed"></td></tr>
+        <tr><td class="tab_left"> Sketch Size: </td><td class="tab_right" id="f_sketchsize"></td></tr>
+        <tr><td class="tab_left"> Free Space: </td><td class="tab_right" id="f_freespace"></td></tr>
+        <tr><td class="tab_left"> Heap free: </td><td class="tab_right" id="f_freeheep"></td></tr>
+        <tr><td class="tab_left"> Heap max: </td><td class="tab_right" id="f_maxheep"></td></tr>
+        <tr><td class="tab_left"> Heap Fragmentation: </td><td class="tab_right" id="f_heapfrag"></td></tr>
+        <tr><td class="tab_left"> Reset Reason: </td><td class="tab_right" id="f_resetreason"></td></tr>
+        <tr><td class="tab_left"> Vcc: </td><td class="tab_right" id="f_vcc"></td></tr>
+        <tr><td class="tab_left"> Uptime: </td><td class="tab_right" id="f_uptime"></td></tr>
+        <tr><td colspan=2 class="tab_head">Network:</td></tr>
+        <tr><td class="tab_left"> IP Adress: </td><td class="tab_right" id="f_localip"></td></tr>
+        <tr><td class="tab_left"> Sub Net Mask: </td><td class="tab_right" id="f_subnetmask"></td></tr>
+        <tr><td class="tab_left"> Gateway IP: </td><td class="tab_right" id="f_gatewayip"></td></tr>
+        <tr><td class="tab_left"> DNS Server IP: </td><td class="tab_right" id="f_dnsip"></td></tr>
+        <tr><td class="tab_left"> SSID: </td><td class="tab_right" id="f_ssid"></td></tr>
+        <tr><td class="tab_left"> Channel: </td><td class="tab_right" id="f_channel"></td></tr>
+        <tr><td class="tab_left"> BSSID: </td><td class="tab_right" id="f_bssid"></td></tr>
+        <tr><td class="tab_left"> Mac Address: </td><td class="tab_right" id="f_macaddress"></td></tr>
+        <tr><td colspan=2 class="tab_head">Build System:</td></tr>
+        <tr><td class="tab_left"> IDE Version: </td><td class="tab_right" id="f_ideversion"></td></tr>
+        <tr><td class="tab_left"> Core Version: </td><td class="tab_right" id="f_coreversion"></td></tr>
+        <tr><td class="tab_left"> SDK Version: </td><td class="tab_right" id="f_sdkversion"></td></tr>
+        <tr><td class="tab_left"> Software Version: </td><td class="tab_right" id="f_swversion"></td></tr>
+        <tr><td class="tab_left"> HTML Version: </td><td class="tab_right" id="f_htmlversion"></td></tr>
+        </tbody></table>
+    </div>
+    <button class="button bg_bk" onclick="window.location.href='index.html'">Hauptseite</button>
+    <div class="div_footer">
+      <hr>
+      ESPNode von Norbert Wilms
+    </div>
+  </div>
+</body>
+</html>

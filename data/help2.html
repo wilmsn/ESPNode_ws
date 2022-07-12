@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<link rel='stylesheet' type='text/css' href='style.css' />
+
+<title id="titel">HTML: Seitenaufbau und Steuerung</title>
+</head>
+<body>
+<div class="wrapper" class="header">
+  <div class="div_content">
+<h1>HTML: Seitenaufbau und Steuerung</h1>
+<li><a href=help2.html#sum>Übersicht</a>
+<li><a href=help2.html#page>Seitenaufbau</a>
+<li><a href=help2.html#webcfg>JSON: webcfg</a>
+<li><a href=help2.html#syscfg>JSON: syscfg</a>
+<li><a href=help2.html#sysinfo>JSON: sysinfo</a>
+<li><a href=help2.html#statinfo>JSON: statinfo</a>
+
+<h2 id="sum">Übersicht</h2>
+<p>
+Die HTML Seite muss für alle vom System unterstützten Ausgabemöglichkeiten erstellt werden. Werden Teile der Seite nicht benötigt werden diese per Javascript ausgeblendet. Werden dynamische Anteile benötigt werden diese zur Laufzeit mittels Javascript aufgebaut. Der dazu benötigte Code muss bereits in der Script-Sektion vorhanden sein. Die Aktivierung erfolgt dann mittels eines definierten JSON-Objektes.<br>
+Dabei haben die einzelnen JSON Aufrufe folgenden Fokus:<br>
+"webcfg":<br>
+Wird von jeder Seite aufgerufen und beinhaltet alle Komponenten die zum Seitenaufbau benötigt werden.<br>
+"syscfg":<br>
+Beinhaltet Daten zur Systemkonfiguration und wird von den Seiten "sysinfo.html" und "settings.html" aufgerufen<br>
+"sysinfo":<br>
+Beinhaltet Informationen zum laufenden System und wird von der Seite "sysinfo.html" aufgerufen<br>
+"statinfo":<br>
+Beinhaltet Informationen zu Sensoren und Aktoren und wird von der Seite "index.html" aufgerufen<br>
+</p>
+<h2 id="page">Seitenaufbau</h2>
+<p>
+Die Seiten werden komplett mit allen eventuell benötigtenm Code geschrieben. Soll ein Teil ausgeblendet werden, wird dieser in einen "DIV" gepackt, der wiederum mit einer eindeutigen ID versehen wird. Im Beispiel wird die Sektion mit der ID "bsp" ausgeblendet um dann bei Bedarf mittels Eintrag in webcfg 
+<textarea disabled="true" style="height:20px;">
+{ "bsp": 1 } 
+</textarea>
+aktiviert zu werden:</p>
+<textarea disabled="true">
+<script type="text/javascript">
+$(document).ready(function(){
+  $("#bsp").hide();
+  $.getJSON( "webcfg", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });    
+  });
+});
+function prozessJS( key, val ) {
+  switch(key) {
+    case "bsp":
+      if (val == 1) {
+        $("#bsp").show();
+      }
+    break;
+  }
+}
+</script>
+.... inside HTML Part ....
+<div id="bsp"> bla bla blup</div>
+</textarea>
+
+<h2 id="webcfg">JSON: webcfg</h2>
+Steuerelemente:
+<table>
+<tr><td>titel1</td><td>erforderlich</td><td>Text für Titelzeile 1</td></tr>
+<tr><td>tite2</td><td>optional</td><td>Text für Titelzeile 2; Wenn nicht vorhanden wird die 2. Titelzeile nicht angezeigt</td></tr>
+<tr><td>dev1</td><td>erforderlich</td><td>Erster Schalter. Parameter ist der Typ (1: nur Schalter; 2: Schalter mit Volumenregler; 3: Schalter mit RGB Regler)</td></tr>
+<tr><td>dev1label</td><td>erforderlich</td><td>Beschriftung für den ersten Schalter.</td></tr>
+<tr><td>rf24gw</td><td>erforderlich</td><td>RF24Gateway vorhanden (=1) bzw. nicht vorhanden (=0)</td></tr>
+<tr><td>rf24node</td><td>erforderlich</td><td>RF24Node vorhanden inkl. einem Sensor(=1) bzw. nicht vorhanden (=0)</td></tr>
+<tr><td>rf24node_m2</td><td>erforderlich</td><td>RF24Node mit min. zwei Sensoren(=1) bzw. nicht vorhanden (=0)</td></tr>
+<tr><td>rf24node_m3</td><td>erforderlich</td><td>RF24Node mit min. drei Sensoren(=1) bzw. nicht vorhanden (=0)</td></tr>
+</table>
+<h2 id="syscfg">JSON: syscfg</h2>
+Steuerelemente:
+<table>
+<tr><td>log_sensor</td><td>erforderlich</td><td>Logging für Sensoraktivitäten (0=aus, 1=ein)</td></tr>
+<tr><td>log_rf24</td><td>erforderlich</td><td>Logging für RF24GW-Aktivitäten (0=aus, 1=ein)</td></tr>
+<tr><td>log_mqtt</td><td>erforderlich</td><td>Logging für MQTT-Aktivitäten (0=aus, 1=ein)</td></tr>
+<tr><td>log_webcmd</td><td>erforderlich</td><td>Logging für Webkommandows (0=aus, 1=ein)</td></tr>
+<tr><td>log_sysinfo</td><td>erforderlich</td><td>Logging für Systeminformationen (0=aus, 1=ein)</td></tr>
+<tr><td>logfile</td><td>erforderlich</td><td>Logging in die Logdatei auf dem ESP (0=aus, 1=ein)</td></tr>
+<tr><td>console</td><td>erforderlich</td><td>Logging für Systeminformationen (0=aus, 1=ein)</td></tr>
+<tr><td>mqttserver</td><td>erforderlich</td><td>Hostname MQTT Server</td></tr>
+<tr><td>mqttclient</td><td>erforderlich</td><td>Clientname dieses Nodes für MQTT</td></tr>
+<tr><td>rf24node_nid</td><td>optional</td><td>Wenn der Node als RF24Node arbeitet wird hier die Node-ID übergeben</td></tr>
+<tr><td>rf24node_m1n</td><td>optional</td><td>Wenn der Node als RF24Node arbeitet wird hier Name des ersten Sensors übergeben</td></tr>
+<tr><td>rf24node_m2n</td><td>optional</td><td>Wenn der Node als RF24Node arbeitet wird hier Name des zweiten Sensors übergeben</td></tr>
+<tr><td>rf24node_m3n</td><td>optional</td><td>Wenn der Node als RF24Node arbeitet wird hier Name des dritten Sensors übergeben</td></tr>
+<tr><td>RF24HUB-Server</td><td>optional</td><td>Wenn der Node als RF24GW oder RF24Node arbeitet wird hier der Servername für den RF24Hub übergeben</td></tr>
+<tr><td>RF24HUB-Port</td><td>optional</td><td>Wenn der Node als RF24GW oder RF24Node arbeitet wird hier der Port auf dem RF24Hub-Server übergeben</td></tr>
+<tr><td>RF24GW-Port</td><td>optional</td><td>Wenn der Node als RF24GW arbeitet wird hier der lokale Port für die RF24-Kommunikation übergeben</td></tr>
+<tr><td>RF24GW-No</td><td>optional</td><td>Wenn der Node als RF24GW arbeitet wird hier die Nummer des Gateways übergeben</td></tr>
+</table>
+<h2 id="sysinfo">JSON: sysinfo</h2>
+In dieser JSON Datei werden zahlreiche Systemparameter übergeben. Eine Aufzählung erfolgt hier nicht.
+
+<h2 id="statinfo">JSON: statinfo</h2>
+In dieser JSON Datei werden die aktuellen Werte der angeschlossenen Sensoren übergeben. Eine Aufzählung erfolgt hier nicht.
+
+  <button class="button bg_gr" onclick="window.location.href='help.html'">Hilfe Übersicht</button>
+  <button class="button bg_bk" onclick="window.location.href='index.html'">Hauptseite</button>
+  <div class="div_footer">
+    <hr>
+    ESPNode von Norbert Wilms
+  </div>
+</div>
+</body>
+</html>

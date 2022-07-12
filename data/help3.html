@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<link rel='stylesheet' type='text/css' href='style.css' />
+
+<title id="titel">Node: Aufbau der Software</title>
+</head>
+<body>
+<div class="wrapper" class="header">
+  <div class="div_content">
+<h1>Node: Aufbau der Software</h1>
+<li><a href=help3.html#overview>Überblick</a>
+
+
+<h2 id="overview">Überblick</h2>
+Der Hauptsketch "ESPNode.ino" bildet den eigendlichen Rahmen und ist nach Arduino Standard aufgebaut.
+Einige Softwarebestandteile sind in eigene Sketches ausgelagert.<br>
+<li>"config.h", "rf24_config.h" und "version.h" werden per Link aus dem Projekt RF24Hub vererbt.
+<li>"secrets.h hat die Zugangsdaten zum WIFI
+<li>"webserver.ino" beinhaltet Funktionen zum Webserver.
+<li>"hue.ino" beinaltet alle Funktionen für die eingebaute HUE-Bridge
+<li>"mqtt.ino" beinhaltet alle Funktionen des eingebauten MQTT Clients.
+<li>"nodedev.h/cpp" beinhalten ein Objekt zur Zustandsverwaltung eines Aktors
+
+
+  <button class="button bg_gr" onclick="window.location.href='help.html'">Hilfe Übersicht</button>
+  <button class="button bg_bk" onclick="window.location.href='index.html'">Hauptseite</button>
+  <div class="div_footer">
+    <hr>
+    ESPNode von Norbert Wilms
+  </div>
+</div>
+</body>
+</html>

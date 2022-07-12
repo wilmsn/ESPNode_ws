@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<link rel='stylesheet' type='text/css' href='style.css' />
+<script src="jquery.js"></script>
+<script type="text/javascript">
+var title="Hauptmenü";
+var intervalperiode = 1000;
+var ledmatrix_active = 0;
+var display = 0;
+var ledmatrix_x = 8;
+var ledmatrix_y = 8;
+var gateway = `ws://${window.location.hostname}/ws`;
+var websocket;
+
+window.addEventListener('load', onLoad);
+function initWebSocket() {
+    console.log('Trying to open a WebSocket connection...');
+    websocket = new WebSocket(gateway);
+    websocket.onopen    = onOpen;
+    websocket.onclose   = onClose;
+    websocket.onmessage = onMessage; // <-- add this line
+}
+function onOpen(event) {
+    console.log('Connection opened');
+}
+function onClose(event) {
+    console.log('Connection closed');
+    setTimeout(initWebSocket, 2000);
+}
+function onMessage(event) {
+   //alert(event.data);
+   const json = JSON.parse(event.data, function (key, val) {
+      //alert(key+" : "+val);
+      prozessJS( key, val );
+    });
+}
+
+function onLoad(event) {
+    initWebSocket();
+//    initButton();
+}
+
+function do_cmd(cmd, attr) {
+  var mycmd = cmd + ":" + attr;
+  websocket.send(mycmd);
+}
+
+$(document).ready(function(){
+  $("#titel2").hide();
+  $("#msg1div").hide();
+  $("#msg2div").hide();
+  $("#msg3div").hide();
+  $("#msg4div").hide();
+  $("#dev1").hide();
+  $("#dev2").hide();
+  $("#dev3").hide();
+  $("#dev4").hide();
+  $("#sw5").hide();
+  $("#ledmatrix").hide();
+  $.getJSON( "webcfg", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });
+  });
+  $.getJSON( "statinfo", function( data ) {
+    $.each( data, function( key, val ) {
+      prozessJS( key, val );
+    });
+  });
+  
+  
+  intervalfunction();
+  setInterval(intervalfunction, intervalperiode);
+});
+
+function draw(item, style) {
+  // style == 1: Label and Button only
+  if ( style == 1 ) {
+    $("#sw"+item).html("<div id='sw"+item+"lab' class='sw_label'></div>"
+                    +"<div><button id='sw"+item+"sw' class='sw_button' onclick=\"do_cmd('sw"+item+"','2');\">???</button>"
+                    +"</div>");
+  }
+  // style == 2: Label, Button and Intensity Slider
+  if ( style == 2 ) {
+    $("#sw"+item).html("<div id='sw"+item+"lab' class='sw_label'></div>"
+                     +"<div><button id='sw"+item+"sw' class='sw_button' onclick=\"do_cmd('sw"+item+"','2');\">???</button></div>"
+                     +"<div>V&nbsp;<input type='range' id='sw"+item+"sl0' min='0' max='15' value='0'>"
+                     +"</div>");
+    $("[type=range]").change(function(){
+      var val = ($(this).val() - $(this).attr('min')) / ($(this).attr('max') - $(this).attr('min'));
+      $(this).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val + ', yellow), '
+                + 'color-stop(' + val + ', gray)'
+                + ')'
+                );
+      do_cmd( this.id, $(this).val() );          
+    });
+  }
+  // style == 3: Label, Button and RGB Slider
+  if ( style == 3 ) {
+    $("#sw"+item).html("<div id='sw"+item+"lab' class='sw_label'></div>"
+                    +"<div><button id='sw"+item+"sw' class='sw_button' onclick=\"do_cmd('sw"+item+"','2');\">???</button></div>"
+                    +"<div>R&nbsp;<input type='range' id='sw"+item+"sl1' min='0' max='15' value='0'><br>"
+                    +"     G&nbsp;<input type='range' id='sw"+item+"sl2' min='0' max='15' value='0'><br>"
+                    +"     B&nbsp;<input type='range' id='sw"+item+"sl3' min='0' max='15' value='0'>"
+                    +"</div>");
+    $("[type=range]").change(function(){
+      var val = ($(this).val() - $(this).attr('min')) / ($(this).attr('max') - $(this).attr('min'));
+      var col;
+      if ( this.id.endsWith("sl1") ) col = "red";
+      if ( this.id.endsWith("sl2") ) col = "green";
+      if ( this.id.endsWith("sl3") ) col = "blue";
+      $(this).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val + ', ' +col + '), '
+                + 'color-stop(' + val + ', gray)'
+                + ')'
+                );
+      do_cmd( this.id, $(this).val() );          
+    });
+  }
+}
+
+function prozessJS( key, val ) {
+  switch(key) {
+    case "titel1":
+      $("#titel1").html(val);
+      $("#titel").html(val+" - "+title);
+    break;
+    case "titel2":
+      $("#titel2").html(val);
+      $("#titel2").show();
+    break;
+    case "msg1":
+      $("#msg1").html(val);
+      $("#msg1div").show();
+    break;
+    case "msg2":
+      $("#msg2").html(val);
+      $("#msg2div").show();
+    break;
+    case "msg3":
+      $("#msg3").html(val);
+      $("#msg3div").show();
+    break;
+    case "msg4":
+      $("#msg4").html(val);
+      $("#msg4div").show();
+    break;
+    case "init1":
+      draw("1", val);
+      $("#sw1").css("width","100%");
+      $("#sw1").show();
+    break;
+    case "sw1":
+      if ( val == "1" ) {
+        $("#sw1sw").css("color","black").css("background-color","yellow");
+        $("#sw1sw").html("ein");
+      } else {
+        $("#sw1sw").css("color","white").css("background-color","black");
+        $("#sw1sw").html("aus");
+      }
+    break;
+    case "sw1lab":
+      $("#sw1lab").html(val);
+    break;
+    case "sw1sl0":
+      $("#sw1sl0").val(val);
+    break;
+    case "sw1sl1":
+      $("#sw1sl1").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', red), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "sw1sl2":
+      $("#sw1sl2").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', green), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "sw1sl3":
+      $("#sw1sl3").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', blue), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "init2":
+      draw("2", val);
+      $("#sw1").css("width","50%");
+      $("#sw2").css("width","50%");
+      $("#sw2").show();
+    break;
+    case "sw2":
+      if ( val == "1" ) {
+        $("#sw2sw").css("color","black").css("background-color","yellow");
+        $("#sw2sw").html("ein");
+      } else {
+        $("#sw2sw").css("color","white").css("background-color","black");
+        $("#sw2sw").html("aus");
+      }
+    break;
+    case "sw2lab":
+      $("#sw2lab").html(val);
+    break;
+    case "sw2sl0":
+      $("#sw2sl0").val(val);
+    break;
+    case "sw2sl1":
+      $("#sw2sl1").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', red), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "sw2sl2":
+      $("#sw2sl2").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', green), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "sw2sl3":
+      $("#sw2sl3").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', blue), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "init3":
+      draw("3", val);
+      $("#sw3").css("width","100%");
+      $("#sw3").show();
+    break;
+    case "sw3":
+      if ( val == "1" ) {
+        $("#sw3sw").css("color","black").css("background-color","yellow");
+        $("#sw3sw").html("ein");
+      } else {
+        $("#sw3sw").css("color","white").css("background-color","black");
+        $("#sw3sw").html("aus");
+      }
+    break;
+    case "sw3lab":
+      $("#sw3lab").html(val);
+    break;
+    case "sw3sl0":
+      $("#sw3sl0").val(val);
+    break;
+    case "sw3sl1":
+      $("#sw3sl1").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', red), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "sw3sl2":
+      $("#sw3sl2").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', green), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "sw3sl3":
+      $("#sw3sl3").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', blue), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "init4":
+      draw("4", val);
+      $("#sw4").css("width","100%");
+      $("#sw4").show();
+    break;
+    case "sw4":
+      if ( val == "1" ) {
+        $("#sw4sw").css("color","black").css("background-color","yellow");
+        $("#sw4sw").html("ein");
+      } else {
+        $("#sw4sw").css("color","white").css("background-color","black");
+        $("#sw4sw").html("aus");
+      }
+    break;
+    case "sw4lab":
+      $("#sw4lab").html(val);
+    break;
+    case "sw4sl0":
+      $("#sw4sl0").val(val);
+    break;
+    case "sw4sl1":
+      $("#sw4sl1").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', red), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "sw4sl2":
+      $("#sw4sl2").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', green), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "sw4sl3":
+      $("#sw4sl3").val(val).css('background-image',
+                '-webkit-gradient(linear, left top, right top, '
+                + 'color-stop(' + val/15 + ', blue), '
+                + 'color-stop(' + val/15 + ', gray)'
+                + ')'
+                );
+    break;
+    case "display":
+	display = val;
+    break;
+    case "ledmatrix_x":
+	ledmatrix_x = val;
+    break;
+    case "ledmatrix_y":
+	ledmatrix_y = val;
+    break;
+    case "ledmatrix":
+        if ( val == 1 ) {
+            ledmatrix_active = 1;
+            build_ledmatrix();
+//            intervalperiode = 30000;
+	}
+    break;
+  }
+}
+
+
+function intervalfunction() {
+//    $.getJSON( "statinfo", function( data ) {
+//	$.each( data, function( key, val ) {
+//	    prozessJS( key, val );
+//	});
+//    });
+    if (ledmatrix_active == 1) fill_ledmatrix();
+}
+
+function build_ledmatrix() {
+    for (let y = 0; y < ledmatrix_y; y++) {
+	$("#display").append("<div id='disp_line_"+y+"' class='ledmatrix_line'><div>");
+	for (let x = 0; x < ledmatrix_x; x++) {
+	    var z = ledmatrix_x * y + x;
+	    $("#disp_line_"+y).append("<div id='disp_dot_"+z+"' class='ledmatrix_dot'><div>");
+	    $("#disp_dot_"+z).css("background","gray");
+	}
+    }
+    $("#ledmatrix").show();
+}
+
+function fill_ledmatrix() {
+    if ( display == 1 ) {
+	$.get("matrixFB", function(data) {
+	    //alert(data);
+	    for (let i = 0; i < data.length; i++) {
+		if ( data[i] == "1" ) {
+		    $("#disp_dot_"+i).css("background","white");
+		} else {
+		    $("#disp_dot_"+i).css("background","gray");
+		}
+	    }
+	});
+    } else {
+	for (let i = 0; i < ledmatrix_x * ledmatrix_y; i++) {
+	    $("#disp_dot_"+i).css("background","gray");
+	}
+    }	
+}
+
+</script>
+
+<title id="titel"></title>
+</head>
+<body>
+<div class="wrapper">
+  <div class="div_header">
+    <h2 id="titel1" class="titel1">Titel1</h2>
+    <h3 id="titel2" class="titel2">Titel2</h3>
+    <hr>
+  </div>
+  <div class="div_content">
+    <div id="msg1div">
+      <div id="msg1" class="msg_div"></div>
+      <hr>
+    </div>
+    <div id="msg2div">
+      <div id="msg2" class="msg_div"></div>
+      <hr>
+    </div>
+    <div id="msg3div">
+      <div id="msg3" class="msg_div"></div>
+      <hr>
+    </div>
+    <div id="msg4div">
+      <div id="msg4" class="msg_div"></div>
+      <hr>
+    </div>
+    <div id="sw1" class="sw_div"></div>
+    <div id="sw2" class="sw_div"></div>
+    <div id="sw3" class="sw_div"></div>
+    <div id="sw4" class="sw_div"></div>
+    <div id="ledmatrix" class="ledmatrix_div">
+	    <div style="width:10px;"></div>
+	    <div id="display" class="display"></div>
+    </div>
+  </div>
+  <button class="button bg_gr" onclick="window.location.href='sysinfo.html'">Systeminfo</button>
+  <button class="button bg_gr" onclick="window.location.href='console.html'">Konsole</button>
+  <button class="button bg_gr" onclick="window.location.href='settings.html'">Einstellungen</button>
+  <button class="button bg_gr" onclick="window.location.href='help.html'">Hilfe</button>
+  <div class="div_footer">
+    <hr>
+    ESPNode von Norbert Wilms
+  </div>
+</div>
+</body>
+</html>

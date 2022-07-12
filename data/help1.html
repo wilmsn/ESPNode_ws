@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<link rel='stylesheet' type='text/css' href='style.css' />
+
+<title id="titel">Nutzungshinweise</title>
+</head>
+<body>
+<div class="wrapper" class="header">
+  <div class="div_content">
+<h1>Nutzungshinweise</h1>
+<li><a href=help1.html#fhem>Einbindung in FHEM</a>
+<li><a href=help1.html#log>Logging</a>
+
+
+
+<h2 id="fhem">FHEM Einbindung</h2>
+<p>
+bla bla blub
+</p>
+<h2 id="log">Logging</h2>
+<p>
+Es sind zwei Arten des Loggings vorgesehen:<br>
+1. Logging via Konsole<br>
+Hier ist das Logging auf eine feste Anzahl von Zeilen begrenzt, danach überschreibt jede neue Zeile eine alte. Folgende Themen und Inhalte sind mittels Einstellung wählbar.<br>
+1.a RF24 (nur wenn der RF24 Gateway aktiviert ist)<br>
+Hier werden die Eingangs- und Ausgangsnachrichten protokolliert.<br>
+1.b Sensor<br>
+Alle Infos zum Sensor (Initialisierung, Werte)<br>
+1.c MQTT<br>
+Alle MQTT Nachrichten (ein- und ausgehend)<br>
+1.d Web Kommando<br>
+Alle Web-Kommandos (entweder über Konsole eingegeben oder interaktiv über die Weboberfläche)<br>
+1.e System Informationen<br>
+Informationen zum laufenden System<br>
+2. Logging via Datei /debugfile.txt<br>
+2.a System Informationen<br>
+Alle kritischen Informationen zum System plus einmal in der Stunde ein "Alive" Eintrag.<br>
+<b>Achtung</b>Diese Einträge werden direkt in den SYstemspeicher des ESP geschrieben. Es besteht die Gefahr das das Filesystem volläuft und durch die dauerhafte Nutzung verschleißt der EEPROM.<br>
+<br>
+Loggingeinstellungen können temporär eingestellt werden, d.h. sie gelten maximal bis zum nächsten reboot. Alternativ können sie im EEPROM gespeichert werden und gelten dann bis sie das nächste mal geändert werden.
+</p>
+  <button class="button bg_gr" onclick="window.location.href='help.html'">Hilfe Übersicht</button>
+  <button class="button bg_bk" onclick="window.location.href='index.html'">Hauptseite</button>
+  <div class="div_footer">
+    <hr>
+    ESPNode von Norbert Wilms
+  </div>
+</div>
+</body>
+</html>

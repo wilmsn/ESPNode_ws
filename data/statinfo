@@ -1,0 +1,9 @@
+{ 
+"dev1sw": 1, 
+"dev1sl1": 7,
+"dev1sl2": 11, 
+"dev1sl3": 2,
+"rf24node_m1v": 11, 
+"rf24node_m2v": 12, 
+"rf24node_m3v": 13, 
+}

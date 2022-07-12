@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<link rel='stylesheet' type='text/css' href='style.css' />
+
+<title id="titel">Help: Implementierung neuer Eigenschaften</title>
+</head>
+<body>
+<div class="wrapper" class="header">
+  <div class="div_content">
+<h1>Implementierung neuer Eigenschaften</h1>
+<li><a href=help4.html#conf>Einbau durch Konfiguration</a>
+<li><a href=help4.html#elem>Übersicht Konfigurationselemente</a>
+<li><a href=help4.html#code>Einbau durch Codeanpassung</a>
+
+
+<h2 id="conf">Einbau durch Konfiguration</h2>
+Wird die bestehende Software durch Konfiguration geändert geschieht dies technisch durch ein- bzw. ausschalten von Preprocessor Direktiven.
+Diese Direktiven sind in mehreren Ebenen angeordnet und sollten möglichst in der oberen Ebene angepasst werden.<br>
+<h3>Ebene 0</h3>
+Die unterste Ebene ist in der Datei "defaults.h" abgebildet. Hier werden grundlegende Zuordnungen gelegt. Sie gelten automatisch für alle Nodes.
+<h3>Ebene 1</h3>
+Die Ebene 1 wird in der Datei "Node_settings.h" hinterlegt. Dazu ist folgende Syntax zu beachten:<br>
+<li>Anlegen eines symbolischen Namens mit : <code>#if defined(MYNODE)</code>
+<li>Überschreiben bzw. Neuanlage von Direktiven : <code>#define EIGENSCHAFT Wert</code>
+<li>Abschluss des Definitionsblocks : <code>#endif</code>
+<br>
+Beispiel:
+<textarea>
+#if defined(WITTYNODE)
+#define HOSTNAME               "wittynode"
+#define HOST_DISCRIPTION       "A Witty Node"
+#define MQTT_CLIENTNAME        "wittynode"
+#define RF24NODE_NODEID        0
+#define RF24NODE_VAL1_NAME     "LDR"
+#define RF24NODE_VAL1_CHANNEL  70
+#define DEBUG_SERIAL
+#define DEV1                   1
+#define DEV1TYP                3
+#define DEV1LABEL              "RGB"
+#define DEV1ONCMD              analogWrite(WITTY_RGB_RT, dev1.get_R()*68); analogWrite(WITTY_RGB_GN, dev1.get_G()*68); analogWrite(WITTY_RGB_BL, dev1.get_B()*68);
+#define DEV1OFFCMD             analogWrite(WITTY_RGB_RT, 0); analogWrite(WITTY_RGB_GN, 0); analogWrite(WITTY_RGB_BL, 0);
+#undef  MQTT
+</textarea>
+<h3>Aktivieren der Konfiguration</h3>
+Die erstellte Konfiguration (in unserem Beispiel "WITTYNODE" muss nun in der Datei "ESPNode.ino" aktiviert werden.<br>
+<b>Es darf in jedem Compilerlauf nur eine Konfiguration aktiv sein !!!</b><br>
+Beispiel:
+<textarea  disabled="true" style="height:100px;">
+//****************************************************
+// My definitions for my nodes based on this sketch
+// Select only one at one time !!!!
+//#define TEICHPUMPE
+//#define TERASSENNODE
+//#define FLURLICHT
+//#define WOHNZIMMERNODE
+//#define TESTNODE
+#define WITTYNODE
+//#define RF24GWTEST
+//#define ESPMINI
+//#define TESTNODE
+//****************************************************
+</textarea>
+Im Idealfall ist keine Änderung von Software oder HTML Seiten erforderlich.
+
+<h2 id="elem">Übersicht Konfigurationselemente</h2>
+<li><a href=href=help4.html#elem_sw>Schalter</a>
+<li><a href=href=help4.html#elem_rf24gw>RF24Gateway</a>
+<li><a href=href=help4.html#elem_rf24node>RF24Node</a>
+<h3 id="elem_sw">Schalter</h3>
+Insgesamt gibt es 4 mögliche Schalter (SW1 ... SW4). Abhängig von der Anzahl der benötigten Schalter N müssen diese von 1 bis N eingebaut werden. Es gibt 3 verschiedene Txpen von Schaltern: 1: Nur Schalter; 2: Schalter mit einem Schieberregler (vol); 3: Schalter mit 3 Schiebereglern (RGB).
+<br>Initialisierung: <pre>#define SW1TYP    1</pre>
+<table>
+<tr><th>Direktive</th><th>Inhalt</th><th>Default</th></tr>
+<tr><td>SW&lt;nummer&gt;TYP</td><td>1: ein/aus Schalter<br>2: Schalter + 1 Regler (vol)<br>3: Schalter + 3 Regler (RGB)</td><td> - </td></tr>
+<tr><td>SW&lt;nummer&gt;LABEL</td><td>Beschriftugstext für den Schalter</td><td>SW&lt;nummer&gt;</td></tr>
+<tr><td>SW&lt;nummer&gt;MQTT</td><td>MQTT Name des Schalters</td><td>sw&lt;nummer&gt;</td></tr>
+<tr><td>SW&lt;nummer&gt;INIT</td><td>Initialisierungsbefehle</td><td>noop();</td></tr>
+<tr><td>SW&lt;nummer&gt;ONCMD</td><td>Befehle zum Einschalten</td><td>noop();</td></tr>
+<tr><td>SW&lt;nummer&gt;OFFCMD</td><td>Befehle zum Ausschalten</td><td>noop();</td></tr>
+</table>
+
+
+<h3 id="elem_rf24gw">RF24 Gateway</h3>
+Der RF24 Gateway empfängt RF24 Funksignale und sendet diese per UDP an den Hub. Dazu wird ein nRF24L01 Modul benötigt.
+<br>Initialisierung: <pre>#define RF24GW_NO    20</pre>
+<table>
+<tr><th>Direktive</th><th>Inhalt</th><th>Default</th></tr>
+<tr><td>RF24GW_NO</td><td>Die nummerische ID des Gateways</td><td> - </td></tr>
+<tr><td>RF24GW_RADIO_CE_PIN</td><td>CE Pin des nRF24L01 Modules</td><td>15</td></tr>
+<tr><td>RF24GW_RADIO_CSN_PIN</td><td>CSN Pin des nRF24L01 Modules</td><td>16</td></tr>
+</table>
+
+<h3 id="elem_rf24node">RF24 Node</h3>
+RF24 Node simuliert einen RF24 Node, jedoch werden hier die Sensorwerte direkt per UDP an den Hub geschickt. Eine NodeID kann om mehreren ESP Nodes genutzt werden, nur der Channel innerhalb einer NodeID muss eineindeutig sein.
+<br>Initialisierung: <pre>#define RF24NODE_NODEID    2</pre>
+<table>
+<tr><th>Direktive</th><th>Inhalt</th><th>Default</th></tr>
+<tr><td>RF24NODE_NODEID</td><td>Die NodeID</td><td> - </td></tr>
+<tr><td>RF24GW_RADIO_CE_PIN</td><td>CE Pin des nRF24L01 Modules</td><td>15</td></tr>
+<tr><td>RF24GW_RADIO_CSN_PIN</td><td>CSN Pin des nRF24L01 Modules</td><td>16</td></tr>
+</table>
+
+
+<h2 id="code">Einbau durch Codeanpassung</h2>
+Benötigt ein Sensor eigene Treibersoftware muss der Code angepasst werden. Dazu sind innerhalb der Software folgende Stellen mit "//Erweiterungen" markiert.<br>
+Im nachfolgenden Beispiel handelt es sich um ein Display in Form einer LED Punktmatrix.
+<h3>Headerdateien</h3>
+Werden im Abschnitt "//Erweiterungen Header" mit einem entsprechenden Kommentar eingefügt:<br>
+<textarea  disabled="true" style="height:40px;">
+#if defined(LEDMATRIX)
+#include <LED_Matrix.h>
+#endif
+</textarea>
+<h3>Variablen</h3>
+Werden im Abschnitt "//Erweiterungen Variablen" mit einem entsprechenden Kommentar eingefügt:<br>
+<textarea  disabled="true" style="height:40px;">
+#if defined(LEDMATRIX)
+LED_Matrix matrix(LEDMATRIX_DIN, LEDMATRIX_CLK, LEDMATRIX_CS, LEDMATRIX_DEVICES_X, LEDMATRIX_DEVICES_Y);
+#endif
+</textarea>
+<h3>Initialisierung</h3>
+Werden im Abschnitt "//Erweiterungen Initialisierung" mit einem entsprechenden Kommentar eingefügt:<br>
+<textarea  disabled="true" style="height:100px;">
+#if defined(LEDMATRIX)
+  matrix.begin();
+  for (int address=0; address < (LEDMATRIX_DEVICES_X * LEDMATRIX_DEVICES_Y); address++) {
+    matrix.displayTest(address, true);
+    delay(200);
+    matrix.displayTest(address, false);
+  }
+  matrix.setFont(2);
+  matrix.setIntensity(1);
+  matrix.setCursor(3,8);
+  matrix.print("Init");
+  matrix.display();
+  delay(500);
+  matrix.off();
+  delay(500);
+  matrix.on();
+  delay(500);
+  matrix.clear();    
+  matrix.display();
+#endif
+</textarea>
+<h3>Loop</h3>
+Werden im Abschnitt "//Erweiterungen Loop" mit einem entsprechenden Kommentar eingefügt:<br>
+<textarea  disabled="true" style="height:30px;">
+#if defined(LEDMATRIX)
+ // tbd,
+#endif
+</textarea>
+
+
+
+
+  <button class="button bg_gr" onclick="window.location.href='help.html'">Hilfe Übersicht</button>
+  <button class="button bg_bk" onclick="window.location.href='index.html'">Hauptseite</button>
+  <div class="div_footer">
+    <hr>
+    ESPNode von Norbert Wilms
+  </div>
+</div>
+</body>
+</html>
