@@ -28,6 +28,10 @@ On Branch: websockets@Dell_7280  !!!!!
 #include "switchdev.h"
 #include "version.h"
 
+#if defined(INTERNETRADIO)
+#include "Audio.h"
+#endif
+
 #if defined(MQTT)
 #include <PubSubClient.h>
 #endif
@@ -129,6 +133,13 @@ long unsigned lastNTPtime;
 unsigned long lastEntryTime;
 char timeStr[12];
 
+#if defined(INTERNETRADIO)
+#define I2S_DOUT     25
+#define I2S_BCLK     27
+#define I2S_LRC      26
+Audio audio;
+#endif
+
 #if defined(SENSOR_18B20)
 OneWire oneWire(SENSOR_18B20);
 DallasTemperature sensor(&oneWire);
@@ -179,6 +190,24 @@ Adafruit_NeoPixel pixels(NEOPIXELNUM, NEOPIXELPIN, NEO_GRB + NEO_KHZ800);
 /************************************************
  * Allgemeine Funktionen
  ***********************************************/
+/************************************************
+ * Audio Events
+ ***********************************************/
+#if defined(INTERNETRADIO)
+void audio_info(const char *info){
+    Serial.print("audio_info: "); Serial.println(info);
+}
+void audio_showstation(const char *info){
+    Serial.print("#S#");
+    Serial.println(String(info));
+}
+void audio_showstreamtitle(const char *info){
+    String sinfo=String(info);
+    sinfo.replace("|", "\n");
+    Serial.print("#T#");
+    Serial.println(sinfo);
+}
+#endif
 /************************************************
  * Füllt den "timeStr" mit der aktuellen Zeit
  ***********************************************/
@@ -367,10 +396,12 @@ void serveFile(AsyncWebServerRequest *request)
     File root = LittleFS.open("/");
     if(!root){
         Serial.println("- failed to open / directory");
+        request->send(200, "text/plain", "Open dir failed");
         return;
     }
     if(!root.isDirectory()){
         Serial.println(" - not a directory");
+        request->send(200, "text/plain", "Not a dir");
         return;
     }
 
@@ -452,8 +483,6 @@ bool getNTPtime(long unsigned int sec)
 void wifi_con(void) 
 {
   if (WiFi.status() != WL_CONNECTED) {
-    logtopic = log_sys_crit;
-    write2log(4,"Try to connect to ",ssid, " with password ",password);
     WiFi.mode(WIFI_STA);
 #ifdef ESP32
     WiFi.setHostname(HOSTNAME);
@@ -461,15 +490,24 @@ void wifi_con(void)
     WiFi.persistent(false);
     WiFi.hostname(HOSTNAME);
 #endif
-    WiFi.begin(ssid, password);
     logtopic = log_sys_crit;
-    write2log(1,"WIFI (re)connect");
+    write2log(4,"Try to (re)connect to ",ssid1, " with password ",password1);
+    WiFi.begin(ssid1, password1);
 
     // ... Give ESP 10 seconds to connect to station.
     unsigned int i=0;
-    while (WiFi.status() != WL_CONNECTED && i < 100) {
-      delay(200);
+    while (WiFi.status() != WL_CONNECTED && i < 20) {
+      delay(500);
       i++;
+    }
+    // Try a second station
+    if (WiFi.status() != WL_CONNECTED) {
+      WiFi.begin(ssid2, password2);
+      write2log(4,"Try to (re)connect to ",ssid2, " with password ",password2);
+      while (WiFi.status() != WL_CONNECTED && i < 20) {
+        delay(500);
+        i++;
+      }
     }
     while (WiFi.status() != WL_CONNECTED) {
       logtopic = log_sys_crit;
@@ -509,8 +547,10 @@ void read_preferences(void) {
  */
 void save_preferences(void) {
   File myFile = LittleFS.open("/prefs", "w");
-  myFile.write((byte *)&preference, sizeof(preference));
-  myFile.close();
+  if (myFile) {
+    myFile.write((byte *)&preference, sizeof(preference));
+    myFile.close();
+  }
 }
 
 /*
@@ -1034,63 +1074,6 @@ char* mk_setcfg(void) {
 #endif
   return info_str;  
 }
-/*
- * Das folgende JSON bildet den Status der Sensoren und Aktoren ab
- * Es wird für die Webseite und für MQTT genutzt
- */
-char* mk_sysinfo1(void) {
-#if defined(DEBUG_SERIAL_HTML)
-  Serial.print("Generiere sysinfo1 ... ");
-#endif
-  char tmp[100];
-  int rssi = WiFi.RSSI();
-  int rssi_quality = 0;
-  snprintf (info_str,INFOSIZE, "{");
-#ifdef ESP32
-  snprintf(tmp,99,"\"Platform\":\"%s\"",ESP.getChipModel());
-#else
-  snprintf(tmp,99,"\"Platform\":\"%s\"","ESP8266");
-#endif
-  add_2_info_str(tmp,false);
-#ifdef ESP32
-  snprintf(tmp,99,"\"Hostname\":\"%s\"",HOSTNAME);
-#else
-  snprintf(tmp,99,"\"Hostname\":\"%s\"",WiFi.hostname().c_str());
-#endif
-  add_2_info_str(tmp,true);
-#ifdef ESP32
-  snprintf(tmp,99,"\"Cores\":\"%d\"",ESP.getChipCores());
-#else
-  snprintf(tmp,99,"\"Cores\":\"%d\"",1);
-#endif
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"SSID\":\"%s (%ddBm / %d%%)\"",WiFi.SSID().c_str(), rssi, rssi_quality);
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"IP\":\"%s\"",WiFi.localIP().toString().c_str());
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"Channel\":\"%d\"",WiFi.channel());
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"GW-IP\":\"%s\"",WiFi.gatewayIP().toString().c_str());
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"Freespace\":\"%0.0fKB\"",ESP.getFreeSketchSpace() / 1024.0);
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"Sketchsize\":\"%0.0fKB\"",ESP.getSketchSize() / 1024.0);
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"FlashSize\":\"%dMB\"",(int)(ESP.getFlashChipSize() / 1024 / 1024));
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"FlashFreq\":\"%dMHz\"",(int)(ESP.getFlashChipSpeed() / 1000000));
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"CpuFreq\":\"%dMHz\"",(int)(F_CPU / 1000000));
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"Vcc\":\"%.2fV\"}",getVcc());
-  add_2_info_str(tmp,true);
-#if defined(DEBUG_SERIAL_HTML)
-  Serial.print(" ok (");
-  Serial.print(strlen(info_str));
-  Serial.println(" byte)");
-#endif
-  return info_str;
-}
 
 #ifdef ESP32
 /*
@@ -1129,13 +1112,87 @@ char* getResetReason(char* tmp) {
 #endif
 
 /*
- * Das folgende JSON bildet den Status der Sensoren und Aktoren ab
+ * Das folgende JSON bildet den Status des Hosts ab (Teil1)
  * Es wird für die Webseite und für MQTT genutzt
  */
-char* mk_sysinfo2(void) {
+char* mk_sysinfo1(void) {
+#if defined(DEBUG_SERIAL_HTML)
+  Serial.print("Generiere sysinfo1 ... ");
+#endif
+#ifdef ESP8266
   uint32_t free;
   uint16_t max;
   uint8_t frag;
+  ESP.getHeapStats(&free, &max, &frag);
+#endif
+  char tmp[100];
+  snprintf (info_str,INFOSIZE, "{");
+#ifdef ESP32
+  snprintf(tmp,99,"\"Platform\":\"%s\"",ESP.getChipModel());
+#else
+  snprintf(tmp,99,"\"Platform\":\"%s\"","ESP8266");
+#endif
+  add_2_info_str(tmp,false);
+#ifdef ESP32
+  snprintf(tmp,99,"\"Core#\":\"%d\"",ESP.getChipCores());
+#else
+  snprintf(tmp,99,"\"Core#\":\"%d\"",1);
+#endif
+  add_2_info_str(tmp,true);
+#ifdef ESP32
+  snprintf(tmp,99,"\"Hostname\":\"%s\"",HOSTNAME);
+#else
+  snprintf(tmp,99,"\"Hostname\":\"%s\"",WiFi.hostname().c_str());
+#endif
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"\"Cpu Speed\":\"%dMHz\"",(int)(F_CPU / 1000000));
+  add_2_info_str(tmp,true);
+#ifdef ESP32
+  snprintf(tmp,99,"\"Heap Size\":\"%0.2fKB\"",(float)ESP.getHeapSize()/1024.0);
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"\"Heap free\":\"%0.2fKB\"",(float)ESP.getFreeHeap()/1024.0);
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"\"PSRAM free\":\"%0.2fKB\"",(float)ESP.getFreePsram()/1024.0);
+  add_2_info_str(tmp,true);
+#else
+  snprintf(tmp,99,"\"Heap Max\":\"%0.2fKB\"",(float)max/1024.0);
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"\"Heap free\":\"%0.2fKB\"",(float)free/1024.0);
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"\"Heap frag\":\"%0.2f\"",(float)frag/1024.0);
+  add_2_info_str(tmp,true);
+#endif
+  snprintf(tmp,99,"\"Freespace\":\"%0.0fKB\"",ESP.getFreeSketchSpace() / 1024.0);
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"\"Sketchsize\":\"%0.0fKB\"",ESP.getSketchSize() / 1024.0);
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"\"FlashSize\":\"%dMB\"",(int)(ESP.getFlashChipSize() / 1024 / 1024));
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"\"FlashFreq\":\"%dMHz\"",(int)(ESP.getFlashChipSpeed() / 1000000));
+  add_2_info_str(tmp,true);
+#ifdef ESP8266
+  snprintf(tmp,99,"\"Vcc\":\"%.2fV\"",getVcc());
+  add_2_info_str(tmp,true);
+#endif
+  snprintf(tmp,99,"\"UpTime\":\"%luT%02lu:%02lu:%02lu\"",uptime::getDays(), uptime::getHours(), uptime::getMinutes(), uptime::getSeconds());
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"}");
+  add_2_info_str(tmp,false);
+#if defined(DEBUG_SERIAL_HTML)
+  Serial.print(" ok (");
+  Serial.print(strlen(info_str));
+  Serial.println(" byte)");
+#endif
+  return info_str;
+}
+
+/*
+ * Das folgende JSON bildet den Status des Systems ab (Teil2)
+ * Es wird für die Webseite und für MQTT genutzt
+ */
+char* mk_sysinfo2(void) {
+  int rssi = WiFi.RSSI();
+  int rssi_quality = 0;
   char tmp[100];
 #if defined(DEBUG_SERIAL_HTML)
   Serial.print("Generiere sysinfo2 ... ");
@@ -1143,10 +1200,9 @@ char* mk_sysinfo2(void) {
   uptime::calculateUptime();
 #ifdef ESP32
   free = ESP.getFreeHeap();
-  frag = 0;
-  max = 0;
+  frag = 0; 
+  max = ESP.getMaxAllocHeap;
 #else
-  ESP.getHeapStats(&free, &max, &frag);
 #endif
   snprintf (info_str,INFOSIZE, "{");
   snprintf(tmp,99,"\"MAC\":\"%s\"", WiFi.macAddress().c_str());
@@ -1160,11 +1216,13 @@ char* mk_sysinfo2(void) {
   snprintf(tmp,99,"\"ResetReason\":\"%s\"", ESP.getResetReason().c_str());
 #endif
   add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"Heap_max\":\"%0.2fKB\"",(float)max/1024.0);
+  snprintf(tmp,99,"\"SSID\":\"%s (%ddBm / %d%%)\"",WiFi.SSID().c_str(), rssi, rssi_quality);
   add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"Heap_free\":\"%0.2fKB\"",(float)free/1024.0);
+  snprintf(tmp,99,"\"IP\":\"%s\"",WiFi.localIP().toString().c_str());
   add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"Heap_frag\":\"%0.2f\"",(float)frag/1024.0);
+  snprintf(tmp,99,"\"Channel\":\"%d\"",WiFi.channel());
+  add_2_info_str(tmp,true);
+  snprintf(tmp,99,"\"GW-IP\":\"%s\"",WiFi.gatewayIP().toString().c_str());
   add_2_info_str(tmp,true);
   snprintf(tmp,99,"\"DnsIP\":\"%s\"",WiFi.dnsIP().toString().c_str());
   add_2_info_str(tmp,true);
@@ -1179,8 +1237,6 @@ char* mk_sysinfo2(void) {
   snprintf(tmp,99,"\"IdeVer\":\"%d\"",ARDUINO);
   add_2_info_str(tmp,true);
   snprintf(tmp,99,"\"SdkVer\":\"%s\"",ESP.getSdkVersion());
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"UpTime\":\"%luT%02lu:%02lu:%02lu\"",uptime::getDays(), uptime::getHours(), uptime::getMinutes(), uptime::getSeconds());
   add_2_info_str(tmp,true);
   snprintf(tmp,99,"\"SW\":\"%s / %s\"", SWVERSION, __DATE__);
   add_2_info_str(tmp,true);
@@ -1279,7 +1335,15 @@ void setup()
   SW1_INIT
 #endif
 #endif  
-
+#if defined(INTERNETRADIO)
+  audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
+  audio.setVolume(10);
+  if (audio.connecttohost("https://radio21.streamabc.net/radio21-hannover-mp3-192-3735655")) {
+    Serial.println("Connected to Radio 21");
+  } else {
+    Serial.println("Error connecttohost");
+  }
+#endif
   logtopic = log_sys;
   write2log(1,"Setup Ende");
 }

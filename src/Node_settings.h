@@ -197,7 +197,7 @@ optional:
 #define SW1_INIT                pinMode(2, OUTPUT); digitalWrite(2, HIGH);
 #define SW1_ON_CMD              digitalWrite(2, LOW);
 #define SW1_OFF_CMD             digitalWrite(2, HIGH);
-#define MAGICNO                1221
+#define INTERNETRADIO
 #endif
 //-----------------------------------------------------
 /*

@@ -22,8 +22,9 @@ $(document).ready(function(){
     });    
   });
   $.getJSON( "sysinfo1", function( data ) {
+    $("#Tab").append("<tr><td colspan=2 class="tab_head">Host:</td></tr>");
     $.each( data, function( key, val ) {
-      prozessJS( key, val );
+      $("#Tab").append("<tr><td class='tab_left'>"+key+": </td><td class='tab_right'>"+val+"</td></tr>");
     });
   });
   $.getJSON( "sysinfo2", function( data ) {
@@ -233,37 +234,7 @@ function prozessJS( key, val ) {
     </div>
     <div class="div_content">
       <table style="width:100%" id="Tab"><tbody>
-        <tr><td colspan=2 class="tab_head">Host:</td></tr>
-        <tr><td class="tab_left"> Platform: </td><td class="tab_right" id="f_platform"></td></tr>
-        <tr><td class="tab_left"> Cores: </td><td class="tab_right" id="f_cores"></td></tr>
-        <tr><td class="tab_left"> Hostname: </td><td class="tab_right" id="f_hostname"></td></tr>
-        <tr><td class="tab_left"> CPU Speed: </td><td class="tab_right" id="f_cpufreq"></td></tr>
-        <tr><td class="tab_left"> Flash Size: </td><td class="tab_right" id="f_flashsize"></td></tr>
-        <tr><td class="tab_left"> Flash Speed: </td><td class="tab_right" id="f_flashspeed"></td></tr>
-        <tr><td class="tab_left"> Sketch Size: </td><td class="tab_right" id="f_sketchsize"></td></tr>
-        <tr><td class="tab_left"> Free Space: </td><td class="tab_right" id="f_freespace"></td></tr>
-        <tr><td class="tab_left"> Heap free: </td><td class="tab_right" id="f_freeheep"></td></tr>
-        <tr><td class="tab_left"> Heap max: </td><td class="tab_right" id="f_maxheep"></td></tr>
-        <tr><td class="tab_left"> Heap Fragmentation: </td><td class="tab_right" id="f_heapfrag"></td></tr>
-        <tr><td class="tab_left"> Reset Reason: </td><td class="tab_right" id="f_resetreason"></td></tr>
-        <tr><td class="tab_left"> Vcc: </td><td class="tab_right" id="f_vcc"></td></tr>
-        <tr><td class="tab_left"> Uptime: </td><td class="tab_right" id="f_uptime"></td></tr>
-        <tr><td colspan=2 class="tab_head">Network:</td></tr>
-        <tr><td class="tab_left"> IP Adress: </td><td class="tab_right" id="f_localip"></td></tr>
-        <tr><td class="tab_left"> Sub Net Mask: </td><td class="tab_right" id="f_subnetmask"></td></tr>
-        <tr><td class="tab_left"> Gateway IP: </td><td class="tab_right" id="f_gatewayip"></td></tr>
-        <tr><td class="tab_left"> DNS Server IP: </td><td class="tab_right" id="f_dnsip"></td></tr>
-        <tr><td class="tab_left"> SSID: </td><td class="tab_right" id="f_ssid"></td></tr>
-        <tr><td class="tab_left"> Channel: </td><td class="tab_right" id="f_channel"></td></tr>
-        <tr><td class="tab_left"> BSSID: </td><td class="tab_right" id="f_bssid"></td></tr>
-        <tr><td class="tab_left"> Mac Address: </td><td class="tab_right" id="f_macaddress"></td></tr>
-        <tr><td colspan=2 class="tab_head">Build System:</td></tr>
-        <tr><td class="tab_left"> IDE Version: </td><td class="tab_right" id="f_ideversion"></td></tr>
-        <tr><td class="tab_left"> Core Version: </td><td class="tab_right" id="f_coreversion"></td></tr>
-        <tr><td class="tab_left"> SDK Version: </td><td class="tab_right" id="f_sdkversion"></td></tr>
-        <tr><td class="tab_left"> Software Version: </td><td class="tab_right" id="f_swversion"></td></tr>
-        <tr><td class="tab_left"> HTML Version: </td><td class="tab_right" id="f_htmlversion"></td></tr>
-        </tbody></table>
+      </tbody></table>
     </div>
     <button class="button bg_bk" onclick="window.location.href='index.html'">Hauptseite</button>
     <div class="div_footer">
