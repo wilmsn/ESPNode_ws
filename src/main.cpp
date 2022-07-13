@@ -15,7 +15,7 @@ On Branch: websockets@Dell_7280  !!!!!
 #include "ESPAsyncTCP.h"
 #endif
 #include "FS.h"
-#include <LittleFS.h>
+#include "LittleFS.h"
 #include <WiFiUdp.h>
 #include <time.h>
 #include <ESPAsyncWebServer.h>
@@ -1124,6 +1124,7 @@ char* mk_sysinfo1(void) {
   uint16_t max;
   uint8_t frag;
   ESP.getHeapStats(&free, &max, &frag);
+  uptime::calculateUptime();
 #endif
   char tmp[100];
   snprintf (info_str,INFOSIZE, "{");
@@ -1174,10 +1175,16 @@ char* mk_sysinfo1(void) {
   snprintf(tmp,99,"\"Vcc\":\"%.2fV\"",getVcc());
   add_2_info_str(tmp,true);
 #endif
+#ifdef ESP32
+  char tmp1[25];
+  snprintf(tmp,99,"\"ResetReason\":\"%s\"", getResetReason(tmp1));
+#else
+  snprintf(tmp,99,"\"ResetReason\":\"%s\"", ESP.getResetReason().c_str());
+#endif
+  add_2_info_str(tmp,true);
   snprintf(tmp,99,"\"UpTime\":\"%luT%02lu:%02lu:%02lu\"",uptime::getDays(), uptime::getHours(), uptime::getMinutes(), uptime::getSeconds());
   add_2_info_str(tmp,true);
-  snprintf(tmp,99,"}");
-  add_2_info_str(tmp,false);
+  add_2_info_str("}",false);
 #if defined(DEBUG_SERIAL_HTML)
   Serial.print(" ok (");
   Serial.print(strlen(info_str));
@@ -1187,7 +1194,7 @@ char* mk_sysinfo1(void) {
 }
 
 /*
- * Das folgende JSON bildet den Status des Systems ab (Teil2)
+ * Das folgende JSON bildet den Status des Networks ab (Teil2)
  * Es wird für die Webseite und für MQTT genutzt
  */
 char* mk_sysinfo2(void) {
@@ -1197,24 +1204,10 @@ char* mk_sysinfo2(void) {
 #if defined(DEBUG_SERIAL_HTML)
   Serial.print("Generiere sysinfo2 ... ");
 #endif
-  uptime::calculateUptime();
-#ifdef ESP32
-  free = ESP.getFreeHeap();
-  frag = 0; 
-  max = ESP.getMaxAllocHeap;
-#else
-#endif
   snprintf (info_str,INFOSIZE, "{");
   snprintf(tmp,99,"\"MAC\":\"%s\"", WiFi.macAddress().c_str());
   add_2_info_str(tmp,false);
   snprintf(tmp,99,"\"SubNetMask\":\"%s\"",WiFi.subnetMask().toString().c_str());
-  add_2_info_str(tmp,true);
-#ifdef ESP32
-  char tmp1[25];
-  snprintf(tmp,99,"\"ResetReason\":\"%s\"", getResetReason(tmp1));
-#else
-  snprintf(tmp,99,"\"ResetReason\":\"%s\"", ESP.getResetReason().c_str());
-#endif
   add_2_info_str(tmp,true);
   snprintf(tmp,99,"\"SSID\":\"%s (%ddBm / %d%%)\"",WiFi.SSID().c_str(), rssi, rssi_quality);
   add_2_info_str(tmp,true);
@@ -1224,27 +1217,11 @@ char* mk_sysinfo2(void) {
   add_2_info_str(tmp,true);
   snprintf(tmp,99,"\"GW-IP\":\"%s\"",WiFi.gatewayIP().toString().c_str());
   add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"DnsIP\":\"%s\"",WiFi.dnsIP().toString().c_str());
+  snprintf(tmp,99,"\"DNS-IP\":\"%s\"",WiFi.dnsIP().toString().c_str());
   add_2_info_str(tmp,true);
   snprintf(tmp,99,"\"BSSID\":\"%s\"",WiFi.BSSIDstr().c_str());
   add_2_info_str(tmp,true);
-#ifdef ESP32
-  snprintf(tmp,99,"\"CoreVer\":\"%s\"","unknown");
-#else
-  snprintf(tmp,99,"\"CoreVer\":\"%s\"",ESP.getCoreVersion().c_str());
-#endif
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"IdeVer\":\"%d\"",ARDUINO);
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"SdkVer\":\"%s\"",ESP.getSdkVersion());
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"\"SW\":\"%s / %s\"", SWVERSION, __DATE__);
-  add_2_info_str(tmp,true);
-  snprintf(tmp,99,"}");
-  add_2_info_str(tmp,false);
-
- add_2_info_str("    ",false);
-
+  add_2_info_str("}",false);
 #if defined(DEBUG_SERIAL_HTML)
   Serial.print(" ok (");
   Serial.print(strlen(info_str));
@@ -1252,6 +1229,36 @@ char* mk_sysinfo2(void) {
 #endif
   return info_str;
 }
+
+/*
+ * Das folgende JSON bildet den Status des Build Systems ab (Teil2)
+ * Es wird für die Webseite und für MQTT genutzt
+ */
+char* mk_sysinfo3(void) {
+  char tmp[100];
+#if defined(DEBUG_SERIAL_HTML)
+  Serial.print("Generiere sysinfo3 ... ");
+#endif
+  snprintf (info_str,INFOSIZE, "{");
+  snprintf(tmp,99,"\"IdeVer\":\"%d\"",ARDUINO);
+  add_2_info_str(tmp,false);
+  snprintf(tmp,99,"\"SdkVer\":\"%s\"",ESP.getSdkVersion());
+  add_2_info_str(tmp,true);
+#ifdef ESP8266
+  snprintf(tmp,99,"\"CoreVer\":\"%s\"",ESP.getCoreVersion().c_str());
+  add_2_info_str(tmp,true);
+#endif
+  snprintf(tmp,99,"\"SW\":\"%s / %s\"", SWVERSION, __DATE__);
+  add_2_info_str(tmp,true);
+  add_2_info_str("}",false);
+#if defined(DEBUG_SERIAL_HTML)
+  Serial.print(" ok (");
+  Serial.print(strlen(info_str));
+  Serial.println(" byte)");
+#endif
+  return info_str;
+}
+
 
 void setup()
 {
@@ -1294,10 +1301,13 @@ void setup()
     request->send(200, "text/plain", mk_setcfg());
   });
   httpServer.on("/sysinfo1", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", mk_sysinfo1());
+    request->send(200, "application/json", mk_sysinfo1());
   });
   httpServer.on("/sysinfo2", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", mk_sysinfo2());
+    request->send(200, "application/json", mk_sysinfo2());
+  });
+  httpServer.on("/sysinfo3", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "application/json", mk_sysinfo3());
   });
   httpServer.on("/restart", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(304, "message/http", do_restart());
@@ -1350,6 +1360,9 @@ void setup()
 
 void loop()
 {
+#if defined(INTERNETRADIO)
+  audio.loop();
+#endif
   ws.cleanupClients();
   if (rebootflag) {
     delay(3000);

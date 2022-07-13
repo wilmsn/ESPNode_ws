@@ -22,14 +22,21 @@ $(document).ready(function(){
     });    
   });
   $.getJSON( "sysinfo1", function( data ) {
-    $("#Tab").append("<tr><td colspan=2 class="tab_head">Host:</td></tr>");
+    $("#Tab").append("<tr><td colspan=2 class=\"tab_head\">Host:</td></tr>");
     $.each( data, function( key, val ) {
       $("#Tab").append("<tr><td class='tab_left'>"+key+": </td><td class='tab_right'>"+val+"</td></tr>");
     });
   });
   $.getJSON( "sysinfo2", function( data ) {
+    $("#Tab").append("<tr><td colspan=2 class=\"tab_head\">Network:</td></tr>");
     $.each( data, function( key, val ) {
-      prozessJS( key, val );
+      $("#Tab").append("<tr><td class='tab_left'>"+key+": </td><td class='tab_right'>"+val+"</td></tr>");
+    });
+  });
+  $.getJSON( "sysinfo3", function( data ) {
+    $("#Tab").append("<tr><td colspan=2 class=\"tab_head\">Build System:</td></tr>");
+    $.each( data, function( key, val ) {
+      $("#Tab").append("<tr><td class='tab_left'>"+key+": </td><td class='tab_right'>"+val+"</td></tr>");
     });
   });
   $("#f_htmlversion").html(htmlversion);
@@ -45,72 +52,6 @@ function prozessJS( key, val ) {
       $("#titel2").html(val);
       $("#titel2").show();
     break;
-    case "IP":
-      $("#f_localip").html(val);
-    break;
-    case "GW-IP":
-      $("#f_gatewayip").html(val);
-    break;
-    case "DnsIP":
-      $("#f_dnsip").html(val);
-    break;
-    case "SSID":
-      $("#f_ssid").html(val);
-    break;
-    case "Channel":
-      $("#f_channel").html(val);
-    break;
-    case "SubNetMask":
-      $("#f_subnetmask").html(val);
-    break;
-    case "BSSID":
-      $("#f_bssid").html(val);
-    break;
-    case "MAC":
-      $("#f_macaddress").html(val);
-    break;
-    case "Platform":
-      $("#f_platform").html(val);
-    break;
-    case "Hostname":
-      $("#f_hostname").html(val);
-    break;
-    case "ResetReason":
-      $("#f_resetreason").html(val);
-    break;
-    case "CpuFreq":
-      $("#f_cpufreq").html(val);
-    break;
-    case "Cores":
-      $("#f_cores").html(val);
-    break;
-    case "Freespace":
-      $("#f_freespace").html(val);
-    break;
-    case "Sketchsize":
-      $("#f_sketchsize").html(val);
-    break;
-    case "Heap_max":
-      $("#f_maxheep").html(val);
-    break;
-    case "Heap_free":
-      $("#f_freeheep").html(val);
-    break;
-    case "Heap_frag":
-      $("#f_heapfrag").html(val+"%");
-    break;
-    case "FlashSize":
-      $("#f_flashsize").html(val);
-    break;
-    case "FlashFreq":
-      $("#f_flashspeed").html(val);
-    break;
-    case "CoreVer":
-      $("#f_coreversion").html(val);
-    break;
-    case "IdeVer":
-      $("#f_ideversion").html(val);
-    break;
     case "MQTT-Hostname":
       $("#f_mqtthostname").html(val);
     break;
@@ -125,18 +66,6 @@ function prozessJS( key, val ) {
     break;
     case "RF24GW-Port":
       $("#f_rf24gwport").html(val);
-    break;
-    case "SdkVer":
-      $("#f_sdkversion").html(val);
-    break;
-    case "SW":
-      $("#f_swversion").html(val);
-    break;
-    case "Vcc":
-      $("#f_vcc").html(val);
-    break;
-    case "UpTime":
-      $("#f_uptime").html(val);
     break;
     case "mqttserver":
       $("#f_mqttserver").html(val);
