@@ -33,4 +33,6 @@
 
 # Individuell
 secrets.h
+.pio
+.vscode
 
